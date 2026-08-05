@@ -9,12 +9,20 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { Symbols } from "../main/Symbols";
 import type { DefaultApiInterface } from "./agentApi";
 import { getLatestCollectionId } from "./collectionApi";
 import { getCollectorStatus } from "./collectorApi";
+
+/**
+ * `rvtoolsModeEnabled` is defined in the backend OpenAPI spec (ECOPROJECT-5123)
+ * but not yet republished in `@openshift-migration-advisor/agent-sdk`'s
+ * `AgentStatus` type. Drop this augmentation once the SDK ships the field.
+ */
+type AgentStatusWithRvtools = AgentStatus & { rvtoolsModeEnabled?: boolean };
 
 interface AgentStatusContextValue {
   agentStatus: AgentStatus | null;
@@ -23,6 +31,12 @@ interface AgentStatusContextValue {
   error: string | null;
   hasCollectionData: boolean;
   latestCollectionId: string | null;
+  /**
+   * True when the agent was started in RVTools mode (a build-time CLI flag,
+   * not a runtime toggle). Gates every vCenter-only affordance: credentials,
+   * live collector, deep inspection, storage offload, applications/processes.
+   */
+  isRvtoolsMode: boolean;
   refetch: () => Promise<void>;
 }
 
@@ -87,6 +101,13 @@ export const AgentStatusProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchStatus();
   }, [fetchStatus]);
 
+  const isRvtoolsMode = useMemo(
+    () =>
+      (agentStatus as AgentStatusWithRvtools | null)?.rvtoolsModeEnabled ===
+      true,
+    [agentStatus],
+  );
+
   const value: AgentStatusContextValue = {
     agentStatus,
     collectorStatus,
@@ -94,6 +115,7 @@ export const AgentStatusProvider: React.FC<{ children: React.ReactNode }> = ({
     error,
     hasCollectionData,
     latestCollectionId,
+    isRvtoolsMode,
     refetch: fetchStatus,
   };
 

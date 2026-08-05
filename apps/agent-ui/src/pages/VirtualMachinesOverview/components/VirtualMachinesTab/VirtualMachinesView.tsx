@@ -197,7 +197,8 @@ export const VirtualMachinesView: React.FC<VirtualMachinesViewProps> = ({
   sortFields = [],
   collectionRefreshKey = 0,
 }) => {
-  const { latestCollectionId, collectorStatus } = useAgentStatus();
+  const { latestCollectionId, collectorStatus, isRvtoolsMode } =
+    useAgentStatus();
   const applicationLookupKey = `${latestCollectionId ?? ""}:${collectorStatus?.status ?? ""}:${collectionRefreshKey}`;
   const [searchParams, setSearchParams] = useSearchParams();
   const variant = groupContext ? "groups" : "overview";
@@ -909,7 +910,9 @@ export const VirtualMachinesView: React.FC<VirtualMachinesViewProps> = ({
         onSelectionChange={setSelectedVMs}
         onFetchAllVmIds={agentApi ? handleFetchAllVmIds : undefined}
         onRefreshFilterOptions={onRefreshFilterOptions}
-        onRunDeepInspection={handleRunDeepInspection}
+        onRunDeepInspection={
+          isRvtoolsMode ? undefined : handleRunDeepInspection
+        }
         onExcludeFromReports={handleExcludeFromReports}
         onIncludeInReports={handleIncludeInReports}
         onAddLabels={handleAddLabels}
@@ -930,7 +933,7 @@ export const VirtualMachinesView: React.FC<VirtualMachinesViewProps> = ({
         onCancelInspection={handleCancelInspection}
         onResetInspection={handleResetInspection}
       />
-      {agentApi && (
+      {agentApi && !isRvtoolsMode && (
         <DeepInspectionModal
           isOpen={isInspectionModalOpen}
           onClose={() => setIsInspectionModalOpen(false)}

@@ -349,56 +349,60 @@ export const VMTableGrid: React.FC<VMTableGridProps> = ({
                             Remove from group
                           </DropdownItem>
                         )}
-                        {(() => {
-                          const vmState = vm.inspectionStatus?.state;
-                          const rowInspectionEnabled =
-                            !selectionContextLoadFailed &&
-                            getDeepInspectionEnablementForVmAction(
-                              vm.id,
-                              selectedVMs,
-                              inspectionVms,
-                            ).enabled;
-                          if (vmState === "running" || vmState === "pending") {
-                            const isCanceling = cancelingInspectionVmIds?.has(
-                              vm.id,
-                            );
+                        {onRunDeepInspection &&
+                          (() => {
+                            const vmState = vm.inspectionStatus?.state;
+                            const rowInspectionEnabled =
+                              !selectionContextLoadFailed &&
+                              getDeepInspectionEnablementForVmAction(
+                                vm.id,
+                                selectedVMs,
+                                inspectionVms,
+                              ).enabled;
+                            if (
+                              vmState === "running" ||
+                              vmState === "pending"
+                            ) {
+                              const isCanceling = cancelingInspectionVmIds?.has(
+                                vm.id,
+                              );
+                              return (
+                                <DropdownItem
+                                  key="cancel-vm-inspection"
+                                  isDisabled={isCanceling}
+                                  onClick={() =>
+                                    openCancelInspectionConfirm(vm.id)
+                                  }
+                                >
+                                  Cancel deep inspection
+                                </DropdownItem>
+                              );
+                            }
+                            if (
+                              vmState === "completed" ||
+                              vmState === "error" ||
+                              vmState === "canceled"
+                            ) {
+                              return (
+                                <DropdownItem
+                                  key="rerun-inspection"
+                                  isDisabled={!rowInspectionEnabled}
+                                  onClick={() => onRunDeepInspection?.(vm.id)}
+                                >
+                                  Re-run deep inspection
+                                </DropdownItem>
+                              );
+                            }
                             return (
                               <DropdownItem
-                                key="cancel-vm-inspection"
-                                isDisabled={isCanceling}
-                                onClick={() =>
-                                  openCancelInspectionConfirm(vm.id)
-                                }
-                              >
-                                Cancel deep inspection
-                              </DropdownItem>
-                            );
-                          }
-                          if (
-                            vmState === "completed" ||
-                            vmState === "error" ||
-                            vmState === "canceled"
-                          ) {
-                            return (
-                              <DropdownItem
-                                key="rerun-inspection"
+                                key="inspect"
                                 isDisabled={!rowInspectionEnabled}
                                 onClick={() => onRunDeepInspection?.(vm.id)}
                               >
-                                Re-run deep inspection
+                                Run deep inspection
                               </DropdownItem>
                             );
-                          }
-                          return (
-                            <DropdownItem
-                              key="inspect"
-                              isDisabled={!rowInspectionEnabled}
-                              onClick={() => onRunDeepInspection?.(vm.id)}
-                            >
-                              Run deep inspection
-                            </DropdownItem>
-                          );
-                        })()}
+                          })()}
                         {getMigrationExcluded(vm) ? (
                           <DropdownItem
                             key="include-in-reports"

@@ -86,7 +86,8 @@ export const VMDetailsPage: React.FC<VMDetailsPageProps> = ({
   collectionRefreshKey = 0,
 }) => {
   const agentApi = useInjection<DefaultApiInterface>(Symbols.AgentApi);
-  const { latestCollectionId, collectorStatus } = useAgentStatus();
+  const { latestCollectionId, collectorStatus, isRvtoolsMode } =
+    useAgentStatus();
   const applicationLookupKey = `${latestCollectionId ?? ""}:${collectorStatus?.status ?? ""}:${collectionRefreshKey}`;
   const [vm, setVm] = useState<VirtualMachineDetailWithUtilization | null>(
     null,
@@ -140,6 +141,16 @@ export const VMDetailsPage: React.FC<VMDetailsPageProps> = ({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-fetch when collection context or inventory revision changes
   useEffect(() => {
+    // Applications aren't available in RVTools mode (backend 501s
+    // `listApplications`) — never fire the call so the UI never relies on
+    // the 501 to "fail silently."
+    if (isRvtoolsMode) {
+      setVmApplications([]);
+      setApplicationsError(null);
+      setApplicationsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     const fetchApplications = async () => {
@@ -176,7 +187,7 @@ export const VMDetailsPage: React.FC<VMDetailsPageProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [vmId, agentApi, applicationLookupKey]);
+  }, [vmId, agentApi, applicationLookupKey, isRvtoolsMode]);
 
   useEffect(() => {
     if (scrollToSection !== "applications" || loading || applicationsLoading) {
@@ -990,20 +1001,24 @@ export const VMDetailsPage: React.FC<VMDetailsPageProps> = ({
         </Card>
       </StackItem>
 
-      <StackItem>
-        <div ref={applicationsSectionRef}>
-          <VMApplicationsCard
-            key={vmId}
-            applications={vmApplications}
-            loading={applicationsLoading}
-            error={applicationsError}
-          />
-        </div>
-      </StackItem>
+      {!isRvtoolsMode && (
+        <StackItem>
+          <div ref={applicationsSectionRef}>
+            <VMApplicationsCard
+              key={vmId}
+              applications={vmApplications}
+              loading={applicationsLoading}
+              error={applicationsError}
+            />
+          </div>
+        </StackItem>
+      )}
 
-      <StackItem>
-        <VMProcessesCard key={vmId} processes={vm.processes ?? []} />
-      </StackItem>
+      {!isRvtoolsMode && (
+        <StackItem>
+          <VMProcessesCard key={vmId} processes={vm.processes ?? []} />
+        </StackItem>
+      )}
     </Stack>
   );
 };

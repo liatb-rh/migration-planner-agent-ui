@@ -13,8 +13,13 @@ import { AgentStatusProvider } from "../common/AgentStatusContext.tsx";
 import { AgentUIVersion } from "../common/AgentUIVersion.tsx";
 import { createAgentApi } from "../common/agentApi";
 import { CredentialsProvider } from "../credentials/CredentialsContext.tsx";
+import { createMockAgentApi } from "../mocks/mockAgentApi.ts";
+import { installMockFetch } from "../mocks/mockFetch.ts";
 import { router } from "./Router.tsx";
 import { Symbols } from "./Symbols.ts";
+
+export const isMockApiEnabled = (): boolean =>
+  import.meta.env.VITE_MOCK_API === "true";
 
 export const getConfigurationBasePath = (): string => {
   if (import.meta.env.PROD) {
@@ -28,11 +33,17 @@ export const getConfigurationBasePath = (): string => {
 };
 
 function getConfiguredContainer(): Container {
+  const container = new Container();
+
+  if (isMockApiEnabled()) {
+    container.register(Symbols.AgentApi, createMockAgentApi());
+    return container;
+  }
+
   const agentApiConfig = new Configuration({
     basePath: getConfigurationBasePath(),
     fetchApi: (url, init) => fetch(url, { ...init, cache: "no-store" }),
   });
-  const container = new Container();
   container.register(Symbols.AgentApi, createAgentApi(agentApiConfig));
 
   return container;
@@ -44,6 +55,10 @@ function main(): void {
     throw new Error(
       "Root element not found. Make sure the HTML contains an element with id='root'.",
     );
+  }
+
+  if (isMockApiEnabled()) {
+    installMockFetch();
   }
 
   root.style.height = "inherit";

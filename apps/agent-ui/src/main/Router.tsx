@@ -65,19 +65,37 @@ export const router = createBrowserRouter(
         {
           path: "storage-offload-estimator",
           lazy: async () => {
+            const { ProtectedToolRoute } = await import(
+              "../pages/ProtectedToolRoute.tsx"
+            );
             const { StorageOffloadPage } = await import(
               "../pages/StorageOffloadEstimator/StorageOffloadPage.tsx"
             );
-            return { Component: StorageOffloadPage };
+            return {
+              Component: () => (
+                <ProtectedToolRoute>
+                  <StorageOffloadPage />
+                </ProtectedToolRoute>
+              ),
+            };
           },
         },
         {
           path: "report-comparison",
           lazy: async () => {
+            const { ProtectedToolRoute } = await import(
+              "../pages/ProtectedToolRoute.tsx"
+            );
             const { ReportComparisonPage } = await import(
               "../pages/ReportComparison/ReportComparisonPage.tsx"
             );
-            return { Component: ReportComparisonPage };
+            return {
+              Component: () => (
+                <ProtectedToolRoute>
+                  <ReportComparisonPage />
+                </ProtectedToolRoute>
+              ),
+            };
           },
         },
       ],

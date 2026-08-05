@@ -82,6 +82,7 @@ export const ReportContainer: React.FC = () => {
   const {
     agentStatus,
     hasCollectionData,
+    isRvtoolsMode,
     refetch: refetchAgentStatus,
   } = useAgentStatus();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -176,7 +177,10 @@ export const ReportContainer: React.FC = () => {
     loading: applicationsLoading,
     error: applicationsError,
     refreshApplications,
-  } = useApplicationsData(agentApi, activeTab === REPORT_TAB.applications);
+  } = useApplicationsData(
+    agentApi,
+    activeTab === REPORT_TAB.applications && !isRvtoolsMode,
+  );
 
   useEffect(() => {
     const nextTab = resolveReportTab(
@@ -728,7 +732,7 @@ export const ReportContainer: React.FC = () => {
           </StackItem>
         )}
 
-        {!isDataShared && (
+        {!isDataShared && !isRvtoolsMode && (
           <StackItem>
             <DataSharingAlert
               onShare={handleShareClick}
@@ -854,36 +858,40 @@ export const ReportContainer: React.FC = () => {
                 />
               </div>
             </Tab>
-            <Tab
-              eventKey={REPORT_TAB.applications}
-              title={<TabTitleText>Applications</TabTitleText>}
-            >
-              <div style={{ marginTop: "24px" }}>
-                <ApplicationsView
-                  applications={applicationsList}
-                  loading={applicationsLoading}
-                  error={applicationsError}
-                  agentApi={agentApi}
-                  selectedApplicationName={selectedApplicationName}
-                  onClearSelectedApplication={handleClearSelectedApplication}
-                  onNavigateToVm={handleNavigateToVm}
-                  onViewInVmList={handleViewApplicationInVmList}
-                  onRefreshApplications={refreshApplications}
-                  onRefreshFilterOptions={refreshFilterOptions}
-                />
-              </div>
-            </Tab>
+            {!isRvtoolsMode && (
+              <Tab
+                eventKey={REPORT_TAB.applications}
+                title={<TabTitleText>Applications</TabTitleText>}
+              >
+                <div style={{ marginTop: "24px" }}>
+                  <ApplicationsView
+                    applications={applicationsList}
+                    loading={applicationsLoading}
+                    error={applicationsError}
+                    agentApi={agentApi}
+                    selectedApplicationName={selectedApplicationName}
+                    onClearSelectedApplication={handleClearSelectedApplication}
+                    onNavigateToVm={handleNavigateToVm}
+                    onViewInVmList={handleViewApplicationInVmList}
+                    onRefreshApplications={refreshApplications}
+                    onRefreshFilterOptions={refreshFilterOptions}
+                  />
+                </div>
+              </Tab>
+            )}
           </Tabs>
         </StackItem>
       </Stack>
 
-      <DataSharingModal
-        isOpen={isShareModalOpen}
-        onConfirm={handleShareConfirm}
-        onCancel={handleShareCancel}
-        isLoading={isShareLoading}
-        error={shareError}
-      />
+      {!isRvtoolsMode && (
+        <DataSharingModal
+          isOpen={isShareModalOpen}
+          onConfirm={handleShareConfirm}
+          onCancel={handleShareCancel}
+          isLoading={isShareLoading}
+          error={shareError}
+        />
+      )}
 
       <ExportCsvModal
         isOpen={isExportModalOpen}

@@ -85,7 +85,7 @@ export const GroupDetailPage: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const agentApi = useInjection<DefaultApiInterface>(Symbols.AgentApi);
-  const { agentStatus } = useAgentStatus();
+  const { agentStatus, isRvtoolsMode } = useAgentStatus();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [group, setGroup] = useState<Group | null>(null);
@@ -155,7 +155,7 @@ export const GroupDetailPage: React.FC = () => {
     refreshApplications,
   } = useApplicationsData(
     agentApi,
-    activeTab === REPORT_TAB.applications,
+    activeTab === REPORT_TAB.applications && !isRvtoolsMode,
     groupFilter,
   );
 
@@ -654,25 +654,27 @@ export const GroupDetailPage: React.FC = () => {
                 />
               </div>
             </Tab>
-            <Tab
-              eventKey={REPORT_TAB.applications}
-              title={<TabTitleText>Applications</TabTitleText>}
-            >
-              <div style={{ marginTop: "24px" }}>
-                <ApplicationsView
-                  applications={applicationsList}
-                  loading={applicationsLoading}
-                  error={applicationsError}
-                  agentApi={agentApi}
-                  selectedApplicationName={selectedApplicationName}
-                  onClearSelectedApplication={handleClearSelectedApplication}
-                  onNavigateToVm={handleNavigateToVm}
-                  onViewInVmList={handleViewApplicationInVmList}
-                  onRefreshApplications={refreshApplications}
-                  onRefreshFilterOptions={refreshFilterOptions}
-                />
-              </div>
-            </Tab>
+            {!isRvtoolsMode && (
+              <Tab
+                eventKey={REPORT_TAB.applications}
+                title={<TabTitleText>Applications</TabTitleText>}
+              >
+                <div style={{ marginTop: "24px" }}>
+                  <ApplicationsView
+                    applications={applicationsList}
+                    loading={applicationsLoading}
+                    error={applicationsError}
+                    agentApi={agentApi}
+                    selectedApplicationName={selectedApplicationName}
+                    onClearSelectedApplication={handleClearSelectedApplication}
+                    onNavigateToVm={handleNavigateToVm}
+                    onViewInVmList={handleViewApplicationInVmList}
+                    onRefreshApplications={refreshApplications}
+                    onRefreshFilterOptions={refreshFilterOptions}
+                  />
+                </div>
+              </Tab>
+            )}
           </Tabs>
         </StackItem>
       </Stack>

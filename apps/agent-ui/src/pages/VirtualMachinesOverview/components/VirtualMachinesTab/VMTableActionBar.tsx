@@ -177,43 +177,47 @@ export const VMTableActionBar: React.FC<VMTableActionBarProps> = ({
                 >
                   Remove from group
                 </DropdownItem>
-                <DropdownItem
-                  key="reset-deep-inspection"
-                  isDisabled={selectedVMs.size === 0}
-                  onClick={() => onResetInspection?.()}
-                >
-                  Reset deep inspection
-                </DropdownItem>
+                {onRunDeepInspection && (
+                  <DropdownItem
+                    key="reset-deep-inspection"
+                    isDisabled={selectedVMs.size === 0}
+                    onClick={() => onResetInspection?.()}
+                  >
+                    Reset deep inspection
+                  </DropdownItem>
+                )}
               </DropdownList>
             </Dropdown>
           </ToolbarItem>
 
-          <ToolbarItem>
-            {shouldShowTooltip ? (
-              <Tooltip content={errorTooltipContent}>
-                <Button variant="primary" icon={<MagicIcon />} isAriaDisabled>
-                  Run deep inspection
-                </Button>
-              </Tooltip>
-            ) : (
-              <Tooltip content={deepInspectionTooltip}>
-                <Button
-                  variant="primary"
-                  icon={<MagicIcon />}
-                  isAriaDisabled={!deepInspectionEnablement.enabled}
-                  onClick={() => {
-                    if (shouldRequestCredentials) {
-                      openEditModal(() => onRunDeepInspection?.());
-                    } else {
-                      onRunDeepInspection?.();
-                    }
-                  }}
-                >
-                  Run deep inspection
-                </Button>
-              </Tooltip>
-            )}
-          </ToolbarItem>
+          {onRunDeepInspection && (
+            <ToolbarItem>
+              {shouldShowTooltip ? (
+                <Tooltip content={errorTooltipContent}>
+                  <Button variant="primary" icon={<MagicIcon />} isAriaDisabled>
+                    Run deep inspection
+                  </Button>
+                </Tooltip>
+              ) : (
+                <Tooltip content={deepInspectionTooltip}>
+                  <Button
+                    variant="primary"
+                    icon={<MagicIcon />}
+                    isAriaDisabled={!deepInspectionEnablement.enabled}
+                    onClick={() => {
+                      if (shouldRequestCredentials) {
+                        openEditModal(() => onRunDeepInspection?.());
+                      } else {
+                        onRunDeepInspection?.();
+                      }
+                    }}
+                  >
+                    Run deep inspection
+                  </Button>
+                </Tooltip>
+              )}
+            </ToolbarItem>
+          )}
           {inspectionActive && (
             <ToolbarItem>
               <Spinner size="md" aria-label="Deep inspection in progress" />
